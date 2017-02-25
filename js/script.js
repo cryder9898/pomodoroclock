@@ -1,11 +1,12 @@
-
-var delay = 1000;
-	var sessMin = 1;
-	var breakMin = 5;
-	var sessSecs = sessMin * 60;
-	var isRunning = false;
-	var timer;
 $(document).ready(function () {
+
+	var delay = 1000,
+		sessMin = 1,
+		breakMin = 1,
+		totalSecs = 5,
+		isRunning = false,
+		isSession = true, // not done yet. for break/session switch
+		timer;
 		
 	function displayTime(time) {
 		let mins = parseInt(time / 60);
@@ -20,18 +21,49 @@ $(document).ready(function () {
     	$('#secs').text(secs);
 	}
 
-	function countDown(time) {
-		return function () { displayTime(--time); };	
+	resetTimer = function() {
+		clearInterval(timer);
+		totalSecs = sessMin * 60;
+		displayTime(totalSecs);
 	}
 
-	function runTimer(time) {
-      	timer = setInterval(countDown(time), delay);
+	//  starts countdown
+	runTimer = function() {
+      	timer = setInterval(function () {
+      		displayTime(--totalSecs);
+
+      		if (isSession) {
+				$('#switch').text('Working');
+			} else {
+				$('#switch').text('Break');
+			}
+			if (totalSecs === 0 && isSession) {
+				totalSecs = breakMin * 60;
+				isSession = !isSession;
+			}
+			if (totalSecs === 0 && !isSession) {
+				totalSecs = sessMin * 60;
+				isSession = !isSession;
+			}
+		}, delay);
 	}
 
 	// init timer values
-	displayTime(sessSecs);
+	displayTime(totalSecs);
 	$('#break-val').text(breakMin);
 	$('#session-val').text(sessMin);
+
+	// start and pause timer
+	$('.timer').click(function () {
+		if(isRunning) {
+			isRunning = false;
+			$('#switch').text('Paused');
+			clearInterval(timer);
+		} else {
+			isRunning = true;
+			runTimer();
+		}	
+	});
 
 	// increment break by 1
 	$('#add-br').click(function () {
@@ -46,38 +78,13 @@ $(document).ready(function () {
 	// increase session by 1
 	$('#add-sess').click(function () {
 		$('#session-val').text(++sessMin);
-		clearInterval(timer);
-		sessSecs = sessMin * 60;
-		displayTime(sessSecs);
+		resetTimer();
 	});
 
 	// decrease session by 1
 	$('#sub-sess').click(function () {
 		$('#session-val').text(--sessMin);
-		clearInterval(timer);
-		sessSecs = sessMin * 60;
-		displayTime(sessSecs);
-	});
-
-	// start and pause timer
-	$('.timer').click(function () {
-		if(isRunning) {
-			isRunning = false;
-			clearInterval(timer);
-		} else {
-			isRunning = true;
-			runTimer(sessSecs);
-		}	
+		resetTimer();
 	});
 
 });
-
-function orderMyLogic(val) {
-if (val < 5 ) {
-return "Less than 5";
-}else if(val < 10){
-return "less than 10";
-}else {
-return "Greater than or equal to 10";
-}
-}
