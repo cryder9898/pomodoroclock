@@ -3,12 +3,13 @@ $(document).ready(function () {
 	var delay = 1000,
 		sessMin = 1,
 		breakMin = 1,
-		totalSecs = 5,
+		secsLeft = 5,
+        totalSecs = secsLeft,
 		isRunning = false,
-		isSession = true, // not done yet. for break/session switch
+		isSession = true,
 		timer;
 		
-	function displayTime(time) {
+    var displayTime = function(time) {
 		let mins = parseInt(time / 60);
 		if (mins < 10) {
 			mins = '0' + mins;
@@ -21,35 +22,46 @@ $(document).ready(function () {
     	$('#secs').text(secs);
 	}
 
-	resetTimer = function() {
+	var resetTimer = function() {
+        $('#sand').css('height', '0px');
+        isRunning = false;
 		clearInterval(timer);
-		totalSecs = sessMin * 60;
-		displayTime(totalSecs);
+		totalSecs = secsLeft = sessMin * 60;
+		displayTime(secsLeft);
 	}
 
-	//  starts countdown
-	runTimer = function() {
+	//  starts infinite countdown, switch between work and break
+	var runTimer = function() {
       	timer = setInterval(function () {
-      		displayTime(--totalSecs);
+      		displayTime(secsLeft--);
+            
+            $('#sand').height(function() {
+                return Math.abs((secsLeft/totalSecs) * 100 - 100) + '%';
+            });
 
       		if (isSession) {
 				$('#switch').text('Working');
 			} else {
 				$('#switch').text('Break');
 			}
-			if (totalSecs === 0 && isSession) {
-				totalSecs = breakMin * 60;
+            
+            // end of worktime, switch to break
+			if (secsLeft === -1 && isSession) {
+                fill = 0;
+				totalSecs = secsLeft = breakMin * 60;
 				isSession = !isSession;
 			}
-			if (totalSecs === 0 && !isSession) {
-				totalSecs = sessMin * 60;
+            
+            // end of breaktime, switch to work
+			if (secsLeft === -1 && !isSession) {
+				totalSecs = secsLeft = sessMin * 60;
 				isSession = !isSession;
 			}
 		}, delay);
 	}
 
 	// init timer values
-	displayTime(totalSecs);
+	displayTime(secsLeft);
 	$('#break-val').text(breakMin);
 	$('#session-val').text(sessMin);
 
@@ -65,25 +77,33 @@ $(document).ready(function () {
 		}	
 	});
 
-	// increment break by 1
+	// increment break by 1 min
 	$('#add-br').click(function () {
 		$('#break-val').text(++breakMin);
 	});
 
-	// decrease break by 1
+	// decrease break by 1 min
 	$('#sub-br').click(function () {
-		$('#break-val').text(--breakMin);
+        if (breakMin > 1) {
+            $('#break-val').text(--breakMin);
+        }
 	});
 
-	// increase session by 1
+	// increase session by 1 min
 	$('#add-sess').click(function () {
+        isSession = true;
 		$('#session-val').text(++sessMin);
+        $('#switch').text('');
 		resetTimer();
 	});
 
-	// decrease session by 1
+	// decrease session by 1 min
 	$('#sub-sess').click(function () {
-		$('#session-val').text(--sessMin);
+        isSession = true;
+        if (sessMin > 1) {
+            $('#session-val').text(--sessMin);
+        } 
+        $('#switch').text('');
 		resetTimer();
 	});
 
