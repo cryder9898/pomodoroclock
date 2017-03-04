@@ -1,9 +1,9 @@
 $(document).ready(function () {
 
 	var delay = 1000,
-		sessMin = 1,
-		breakMin = 1,
-		secsLeft = 5,
+		sessMin = 20,
+		breakMin = 5,
+		secsLeft = 20 * 60,
         totalSecs = secsLeft,
 		isRunning = false,
 		isSession = true,
@@ -35,14 +35,15 @@ $(document).ready(function () {
       	timer = setInterval(function () {
       		displayTime(secsLeft--);
             
+            // calculates and updates the height of the sand based upon the secsLeft.  Does not look smooth....
             $('#sand').height(function() {
                 return Math.abs((secsLeft/totalSecs) * 100 - 100) + '%';
             });
 
       		if (isSession) {
-				$('#switch').text('Working');
+				$('#switch').text('Do Some Work!');
 			} else {
-				$('#switch').text('Break');
+				$('#switch').text('Break Time!');
 			}
             
             // end of worktime, switch to break
